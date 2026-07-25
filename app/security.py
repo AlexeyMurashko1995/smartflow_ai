@@ -1,3 +1,4 @@
+from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 import jwt
 from datetime import datetime, timezone, timedelta
@@ -7,6 +8,8 @@ SECRET_KEY = 'my_secret_key'
 ALGORITHM = 'HS256'
 
 ACCESS_TOKEN_EXPIRES_MINUTES = 30
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='users/login')
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
