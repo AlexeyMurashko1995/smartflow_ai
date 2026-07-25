@@ -1,21 +1,20 @@
+from datetime import datetime, timedelta, timezone
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy.ext.asyncio import AsyncSession
+import jwt
+from passlib.context import CryptContext
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.database import get_async_session
 from app.models import User
-from passlib.context import CryptContext
-import jwt
-from datetime import datetime, timezone, timedelta
 
 SECRET_KEY = 'my_secret_key'
-
 ALGORITHM = 'HS256'
-
 ACCESS_TOKEN_EXPIRES_MINUTES = 30
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='users/login')
-
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
 
@@ -36,5 +35,8 @@ def create_access_token(data: dict) -> str:
     return jwt_token
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme), session: AsyncSession = Depends(get_async_session)):
+async def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    session: AsyncSession = Depends(get_async_session),
+):
     pass
