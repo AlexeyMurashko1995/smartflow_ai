@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from app.schemas import UserCreate, UserResponse, Token
 from app.database import get_async_session, AsyncSession
 from app.models import User
-from app.security import get_password_hash
+from app.security import get_password_hash, verify_password, create_access_token
 
 router = APIRouter(prefix='/users', tags=['Users'])
 
@@ -31,3 +31,10 @@ async def get_login(
     query = select(User).where(User.email == user_data.email)
     result = await session.execute(query)
     user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail='User not found')
+    comparison = verify_password(user_data.password, user.hashed_password)
+    if not comparison:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail='User not found')
+    return {'access_token': create_access_token(data={'sub': user.email}), 'token_type': 'bearer'}
+
