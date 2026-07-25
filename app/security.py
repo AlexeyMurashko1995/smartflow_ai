@@ -1,4 +1,9 @@
+from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from app.database import get_async_session
+from app.models import User
 from passlib.context import CryptContext
 import jwt
 from datetime import datetime, timezone, timedelta
@@ -29,3 +34,7 @@ def create_access_token(data: dict) -> str:
     to_encode.update({'exp': exp})
     jwt_token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return jwt_token
+
+
+async def get_current_user(token: str = Depends(oauth2_scheme), session: AsyncSession = Depends(get_async_session)):
+    pass
