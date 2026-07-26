@@ -3,7 +3,7 @@ from sqlalchemy import select
 from app.schemas import UserCreate, UserResponse, Token
 from app.database import get_async_session, AsyncSession
 from app.models import User
-from app.security import get_password_hash, verify_password, create_access_token
+from app.security import get_password_hash, verify_password, create_access_token, get_current_user
 
 router = APIRouter(prefix='/users', tags=['Users'])
 
@@ -38,3 +38,7 @@ async def get_login(
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail='User not found')
     return {'access_token': create_access_token(data={'sub': user.email}), 'token_type': 'bearer'}
 
+
+@router.get('/me', response_model=UserResponse)
+async def read_users_me(current_user: User = Depends(get_current_user)):
+    return current_user
