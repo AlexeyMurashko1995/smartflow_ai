@@ -45,5 +45,11 @@ async def get_current_user(
         email = payload.get('sub')
         if not email:
             raise credentials_exception
+        query = select(User).where(User.email == email)
+        result = await session.execute(query)
+        user = result.scalar_one_or_none()
+        if not user:
+            raise credentials_exception
+        return user
     except jwt.PyJWTError:
         raise credentials_exception
