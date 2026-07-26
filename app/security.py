@@ -39,4 +39,11 @@ async def get_current_user(
     token: str = Depends(oauth2_scheme),
     session: AsyncSession = Depends(get_async_session),
 ):
-    pass
+    credentials_exception = HTTPException(status.HTTP_401_UNAUTHORIZED, detail='Could not validate credentials')
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email = payload.get('sub')
+        if not email:
+            raise credentials_exception
+    except jwt.PyJWTError:
+        raise credentials_exception
