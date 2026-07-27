@@ -43,10 +43,13 @@ async def get_current_user(
     credentials_exception = HTTPException(status.HTTP_401_UNAUTHORIZED, detail='Could not validate credentials')
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email = payload.get('sub')
-        if not email:
+        sub = payload.get('sub')
+        if not sub:
             raise credentials_exception
-        query = select(User).where(User.email == email)
+        if sub.isdigit():
+            query = select(User).where(User.telegram_id==int(sub))
+        else:
+            query = select(User).where(User.email == sub)
         result = await session.execute(query)
         user = result.scalar_one_or_none()
         if not user:
