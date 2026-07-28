@@ -16,6 +16,8 @@ class User(Base):
     hashed_password: Mapped[Optional[str]]
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     categories: Mapped[list['Category']] = relationship(back_populates='user')
+    expenses: Mapped[list['Expense']] = relationship(back_populates='user')
+
 
 
 class Category(Base):
@@ -24,4 +26,17 @@ class Category(Base):
     name: Mapped[str]
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
     user: Mapped['User'] = relationship(back_populates='categories')
-    #expenses: Mapped[list['Expense']] = relationship(back_populates='category')
+    expenses: Mapped[list['Expense']] = relationship(back_populates='category')
+
+
+class Expense(Base):
+    __tablename__ = 'expenses'
+    id: Mapped[int] = mapped_column(primary_key=True)
+    amount: Mapped[Decimal] = mapped_column(Numeric(10, 2))
+    currency: Mapped[str] = mapped_column(default='PLN')
+    description: Mapped[Optional[str]]
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    category_id: Mapped[Optional[int]] = mapped_column(ForeignKey('categories.id'))
+    user: Mapped['User'] = relationship(back_populates='expenses')
+    category: Mapped[Optional['Category']] = relationship(back_populates='expenses')
