@@ -23,3 +23,14 @@ class UserTelegramAuth(BaseModel):
     telegram_id: int
     username: Optional[str] = None
     first_name: Optional[str] = None
+
+
+class CategoryCreate(BaseModel):
+    name: str
+
+
+class CategoryResponse(BaseModel):
+    id: int
+    name: str
+    user_id: int
+    model_config = ConfigDict(from_attributes=True)
