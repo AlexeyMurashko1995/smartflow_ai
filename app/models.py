@@ -19,7 +19,6 @@ class User(Base):
     expenses: Mapped[list['Expense']] = relationship(back_populates='user')
 
 
-
 class Category(Base):
     __tablename__ = 'categories'
     id: Mapped[int] = mapped_column(primary_key=True)
