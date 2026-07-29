@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select
 from app.schemas import CategoryCreate, CategoryResponse
 from app.database import get_async_session, AsyncSession
 from app.models import Category, User
@@ -14,3 +15,11 @@ async def create_category(category_data: CategoryCreate, session: AsyncSession =
     await session.commit()
     await session.refresh(new_category)
     return new_category
+
+
+@router.get('/', response_model=list[CategoryResponse])
+async def get_all_categories(session: AsyncSession = Depends(get_async_session), current_user: User = Depends(get_current_user)):
+    query = select(Category).where(current_user.id == Category.user_id)
+    result = await session.execute(query)
+    categories_list = result.scalars().all()
+    return categories_list
