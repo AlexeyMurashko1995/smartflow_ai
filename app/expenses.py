@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, status
+from sqlalchemy import select, func
 from app.database import AsyncSession, get_async_session
-from app.schemas import ExpenseCreate, ExpenseResponse
+from app.schemas import ExpenseCreate, ExpenseResponse, CategorySummaryResponse
 from app.security import get_current_user
 from app.models import Expense, User
 
@@ -14,3 +15,8 @@ async def create_expense(expense_data: ExpenseCreate, session: AsyncSession = De
     await session.commit()
     await session.refresh(new_expense)
     return new_expense
+
+
+@router.get('/summary', response_model=list[CategorySummaryResponse])
+async def get_expenses_summary(session: AsyncSession = Depends(get_async_session), current_user: User = Depends(get_current_user)):
+    pass
