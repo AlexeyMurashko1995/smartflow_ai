@@ -19,4 +19,7 @@ async def create_expense(expense_data: ExpenseCreate, session: AsyncSession = De
 
 @router.get('/summary', response_model=list[CategorySummaryResponse])
 async def get_expenses_summary(session: AsyncSession = Depends(get_async_session), current_user: User = Depends(get_current_user)):
-    pass
+    query = select(Expense.category_id, func.sum(Expense.amount).label('total_amount')).where(Expense.user_id == current_user.id).group_by(Expense.category_id)
+    result = await session.execute(query)
+    summary_list = result.all()
+    return summary_list
