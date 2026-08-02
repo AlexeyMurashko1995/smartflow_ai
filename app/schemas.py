@@ -54,3 +54,9 @@ class ExpenseResponse(BaseModel):
     created_at: datetime
     user_id: int
     model_config = ConfigDict(from_attributes=True)
+
+
+class CategorySummaryResponse(BaseModel):
+    category_id: Optional[int] = None
+    total_amount: Decimal
+    model_config = ConfigDict(from_attributes=True)
