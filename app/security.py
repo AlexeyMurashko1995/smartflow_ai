@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_async_session
 from app.models import User
-from app.config import settings
+from app.config_app import settings
 
 SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = 'HS256'

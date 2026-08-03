@@ -1,5 +1,5 @@
 import httpx
-from bot.config import bot_settings
+from bot.config_bot import bot_settings
 
 class APIClient():
     def __init__(self):
