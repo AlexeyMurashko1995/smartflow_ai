@@ -14,3 +14,6 @@ class APIClient():
             headers = {'Authorization': f'Bearer {access_token}'}
             response = await client.get(url=f'{self.base_url}/categories/', headers=headers)
             return response.json()
+
+    async def add_expense(self, access_token: str, amount: float, category_id: int, description: str = None):
+        pass
