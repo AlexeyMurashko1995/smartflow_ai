@@ -16,4 +16,8 @@ class APIClient():
             return response.json()
 
     async def add_expense(self, access_token: str, amount: float, category_id: int, description: str = None):
-        pass
+        async with httpx.AsyncClient() as client:
+            headers = {'Authorization': f'Bearer {access_token}'}
+            payload = {'amount': amount, 'category_id': category_id, 'description': description}
+            response = await client.post(url=f'{self.base_url}/expenses/', headers=headers, json=payload)
+            return response.json()
