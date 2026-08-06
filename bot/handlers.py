@@ -20,4 +20,10 @@ async def cmd_start(message: Message, state: FSMContext):
 
 @router.message(Command('categories'))
 async def cmd_get_categories(message: Message, state: FSMContext):
-    pass
+    user_data = await state.get_data()
+    jwt_token = user_data.get('jwt_token')
+    if not jwt_token:
+        await message.answer(f'User is not authorized. Type \start and try again.')
+        return
+    categories = await api_client.get_categories(jwt_token)
+    await message.answer(f'Your categories list: {categories}')
