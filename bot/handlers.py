@@ -12,4 +12,5 @@ api_client = APIClient()
 async def cmd_start(message: Message):
     telegram_id = message.from_user.id
     data = await api_client.login_telegram(telegram_id)
-    await message.answer("Hi! Token received")
+    access_token = data['access_token']
+    await message.answer(f'Hi! Token received. Your token: {access_token[:10]}')
