@@ -1,5 +1,5 @@
 from aiogram import Router
-from aiogram.filters import CommandStart
+from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
@@ -16,3 +16,8 @@ async def cmd_start(message: Message, state: FSMContext):
     access_token = data['access_token']
     await state.update_data(jwt_token=access_token)
     await message.answer(f'Hi! Token received. Your token: {access_token[:10]}. The token was saved.')
+
+
+@router.message(Command('categories'))
+async def cmd_get_categories(message: Message, state: FSMContext):
+    pass
