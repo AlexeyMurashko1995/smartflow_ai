@@ -27,3 +27,8 @@ async def cmd_get_categories(message: Message, state: FSMContext):
         return
     categories = await api_client.get_categories(jwt_token)
     await message.answer(f'Your categories list: {categories}')
+
+
+@router.message(Command('add_expense'))
+async def add_expense(message: Message, state: FSMContext):
+    pass
