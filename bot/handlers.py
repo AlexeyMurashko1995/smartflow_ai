@@ -40,3 +40,8 @@ async def cmd_get_categories(message: Message, state: FSMContext):
 async def add_expense(message: Message, state: FSMContext):
     await state.set_state(AddExpenseStates.waiting_for_amount)
     await message.answer('Please enter the expense amount: ')
+
+
+@router.message(AddExpenseStates.waiting_for_amount)
+async def process_amount(message: Message, state: FSMContext):
+    pass
