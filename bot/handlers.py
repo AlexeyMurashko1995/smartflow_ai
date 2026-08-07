@@ -38,4 +38,5 @@ async def cmd_get_categories(message: Message, state: FSMContext):
 
 @router.message(Command('add_expense'))
 async def add_expense(message: Message, state: FSMContext):
-    pass
+    await state.set_state(AddExpenseStates.waiting_for_amount)
+    await message.answer('Please enter the expense amount: ')
