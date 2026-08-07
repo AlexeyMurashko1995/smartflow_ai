@@ -1,12 +1,19 @@
 from aiogram import Router
 from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message
 
 from bot.client import APIClient
 
 router = Router()
 api_client = APIClient()
+
+
+class AddExpenseStates(StatesGroup):
+    waiting_for_amount = State()
+    waiting_for_category_id = State()
+    waiting_for_description = State()
 
 
 @router.message(CommandStart())
