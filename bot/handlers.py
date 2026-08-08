@@ -1,3 +1,5 @@
+"""Router module for handling financial expenses and Telegram bot commands."""
+
 from aiogram import Router
 from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
@@ -11,13 +13,15 @@ api_client = APIClient()
 
 
 class AddExpenseStates(StatesGroup):
+    """FSM states for managing the expense creation workflow."""
     waiting_for_amount = State()
     waiting_for_category_id = State()
     waiting_for_description = State()
 
 
 @router.message(CommandStart())
-async def cmd_start(message: Message, state: FSMContext):
+async def cmd_start(message: Message, state: FSMContext) -> None:
+    """Handle /start command, authenticate user via Telegram ID, and store JWT token."""
     telegram_id = message.from_user.id
     data = await api_client.login_telegram(telegram_id)
     access_token = data["access_token"]
@@ -28,7 +32,8 @@ async def cmd_start(message: Message, state: FSMContext):
 
 
 @router.message(Command("categories"))
-async def cmd_get_categories(message: Message, state: FSMContext):
+async def cmd_get_categories(message: Message, state: FSMContext) -> None:
+    """Fetch and display available categories for authorized users."""
     user_data = await state.get_data()
     jwt_token = user_data.get("jwt_token")
     if not jwt_token:
@@ -39,13 +44,15 @@ async def cmd_get_categories(message: Message, state: FSMContext):
 
 
 @router.message(Command("add_expense"))
-async def add_expense(message: Message, state: FSMContext):
+async def add_expense(message: Message, state: FSMContext) -> None:
+    """Initiate the expense addition state machine."""
     await state.set_state(AddExpenseStates.waiting_for_amount)
     await message.answer("Please enter the expense amount:")
 
 
 @router.message(AddExpenseStates.waiting_for_amount)
-async def process_amount(message: Message, state: FSMContext):
+async def process_amount(message: Message, state: FSMContext) -> None:
+    """Validate and store expense amount input."""
     try:
         amount = float(message.text)
         if amount <= 0:
@@ -59,7 +66,8 @@ async def process_amount(message: Message, state: FSMContext):
 
 
 @router.message(AddExpenseStates.waiting_for_category_id)
-async def process_category(message: Message, state: FSMContext):
+async def process_category(message: Message, state: FSMContext) -> None:
+    """Validate and store expense category ID input."""
     try:
         category_id = int(message.text)
         if category_id <= 0:
