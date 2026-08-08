@@ -46,3 +46,17 @@ async def cmd_get_categories(message: Message, state: FSMContext) -> None:
 async def add_expense(message: Message, state: FSMContext) -> None:
     await state.set_state(AddExpenseStates.waiting_for_amount)
     await message.answer('Enter the amount: ')
+
+
+@router.message(AddExpenseStates.waiting_for_amount)
+async def process_amount(message: Message, state: FSMContext) -> None:
+    try:
+        amount = float(message.text)
+        if amount <= 0:
+            raise ValueError
+        await state.update_data(amount=amount)
+        await state.set_state(AddExpenseStates.waiting_for_category_id)
+        await message.answer("Great! Now enter the category ID: ")
+    except ValueError:
+        await message.answer("Enter the correct amount: ")
+        return
