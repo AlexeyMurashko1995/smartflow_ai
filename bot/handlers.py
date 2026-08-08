@@ -60,3 +60,17 @@ async def process_amount(message: Message, state: FSMContext) -> None:
     except ValueError:
         await message.answer("Enter the correct amount: ")
         return
+
+
+@router.message(AddExpenseStates.waiting_for_category_id)
+async def process_category_id(message: Message, state: FSMContext) -> None:
+    try:
+        category_id = int(message.text)
+        if category_id <= 0:
+            raise ValueError
+        await state.update_data(category_id=category_id)
+        await state.set_state(AddExpenseStates.waiting_for_description)
+        await message.answer("Nice! Please enter the description: ")
+    except ValueError:
+        await message.answer("Enter the correct category ID: ")
+        return
