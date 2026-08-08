@@ -1,5 +1,5 @@
 from aiogram import Router
-from aiogram.filters import CommandStart, Command
+from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message
@@ -20,26 +20,28 @@ class AddExpenseStates(StatesGroup):
 async def cmd_start(message: Message, state: FSMContext):
     telegram_id = message.from_user.id
     data = await api_client.login_telegram(telegram_id)
-    access_token = data['access_token']
+    access_token = data["access_token"]
     await state.update_data(jwt_token=access_token)
-    await message.answer(f'Hi! Token received. Your token: {access_token[:10]}. The token was saved.')
+    await message.answer(
+        f"Hi! Token received. Your token: {access_token[:10]}. The token was saved."
+    )
 
 
-@router.message(Command('categories'))
+@router.message(Command("categories"))
 async def cmd_get_categories(message: Message, state: FSMContext):
     user_data = await state.get_data()
-    jwt_token = user_data.get('jwt_token')
+    jwt_token = user_data.get("jwt_token")
     if not jwt_token:
-        await message.answer(f'User is not authorized. Type \start and try again.')
+        await message.answer("User is not authorized. Type /start and try again.")
         return
     categories = await api_client.get_categories(jwt_token)
-    await message.answer(f'Your categories list: {categories}')
+    await message.answer(f"Your categories list: {categories}")
 
 
-@router.message(Command('add_expense'))
+@router.message(Command("add_expense"))
 async def add_expense(message: Message, state: FSMContext):
     await state.set_state(AddExpenseStates.waiting_for_amount)
-    await message.answer('Please enter the expense amount: ')
+    await message.answer("Please enter the expense amount:")
 
 
 @router.message(AddExpenseStates.waiting_for_amount)
@@ -50,9 +52,9 @@ async def process_amount(message: Message, state: FSMContext):
             raise ValueError
         await state.update_data(amount=amount)
         await state.set_state(AddExpenseStates.waiting_for_category_id)
-        await message.answer('Great! Now enter the category ID: ')
+        await message.answer("Great! Now enter the category ID:")
     except ValueError:
-        await message.answer('Enter the correct amount: ')
+        await message.answer("Enter the correct amount:")
         return
 
 
@@ -64,7 +66,7 @@ async def process_category(message: Message, state: FSMContext):
             raise ValueError
         await state.update_data(category_id=category_id)
         await state.set_state(AddExpenseStates.waiting_for_description)
-        await message.answer('Nice! Now enter the description: ')
+        await message.answer("Nice! Now enter the description:")
     except ValueError:
-        await message.answer('Enter the correct category ID: ')
+        await message.answer("Enter the correct category ID:")
         return
