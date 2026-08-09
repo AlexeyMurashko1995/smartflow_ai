@@ -74,3 +74,13 @@ async def process_category_id(message: Message, state: FSMContext) -> None:
     except ValueError:
         await message.answer("Enter the correct category ID: ")
         return
+
+
+@router.message(AddExpenseStates.waiting_for_description)
+async def process_description(message: Message, state: FSMContext) -> None:
+    description = message.text
+    await state.update_data(description=description)
+    user_data = await state.get_data()
+    create_expense = await api_client.add_expense(access_token=user_data.get('jwt_token'), amount=user_data.get('amount'), category_id=user_data.get('category_id'), description=user_data.get('description'))
+    await state.clear()
+    await message.answer("The expense was added")
