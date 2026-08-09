@@ -1,10 +1,10 @@
 """Router module for handling financial expenses and Telegram bot commands."""
 
-from aiogram import Router
+from aiogram import Router, F
 from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from bot.client import APIClient
@@ -71,17 +71,18 @@ async def process_amount(message: Message, state: FSMContext) -> None:
         return
 
 
-@router.message(AddExpenseStates.waiting_for_category_id)
-async def process_category_id(message: Message, state: FSMContext) -> None:
+@router.callback_query(AddExpenseStates.waiting_for_category_id)
+async def process_category_id(callback: CallbackQuery, state: FSMContext) -> None:
     try:
-        category_id = int(message.text)
+        category_id = int(callback.data.split("_")[1])
         if category_id <= 0:
             raise ValueError
+
         await state.update_data(category_id=category_id)
         await state.set_state(AddExpenseStates.waiting_for_description)
-        await message.answer("Nice! Please enter the description: ")
+        await callback.message.answer("Nice! Please enter the description: ")
     except ValueError:
-        await message.answer("Enter the correct category ID: ")
+        await callback.message.answer("Enter the correct category ID: ")
         return
 
 
