@@ -74,6 +74,7 @@ async def process_amount(message: Message, state: FSMContext) -> None:
 @router.callback_query(AddExpenseStates.waiting_for_category_id)
 async def process_category_id(callback: CallbackQuery, state: FSMContext) -> None:
     try:
+        await callback.answer()
         category_id = int(callback.data.split("_")[1])
         if category_id <= 0:
             raise ValueError
@@ -82,7 +83,7 @@ async def process_category_id(callback: CallbackQuery, state: FSMContext) -> Non
         await state.set_state(AddExpenseStates.waiting_for_description)
         await callback.message.answer("Nice! Please enter the description: ")
     except ValueError:
-        await callback.message.answer("Enter the correct category ID: ")
+        await callback.message.answer("Please choose a valid category from the buttons.")
         return
 
 
