@@ -5,6 +5,7 @@ from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from bot.client import APIClient
 
@@ -56,7 +57,15 @@ async def process_amount(message: Message, state: FSMContext) -> None:
             raise ValueError
         await state.update_data(amount=amount)
         await state.set_state(AddExpenseStates.waiting_for_category_id)
-        await message.answer("Great! Now enter the category ID: ")
+        user_data = await state.get_data()
+        categories = await api_client.get_categories(user_data.get('jwt_token'))
+        builder = InlineKeyboardBuilder()
+
+        for cat in categories:
+            builder.button(text=cat["name"], callback_data=f"category_{cat['id']}")
+        builder.adjust(2)
+
+        await message.answer("Choose a category:", reply_markup=builder.as_markup())
     except ValueError:
         await message.answer("Enter the correct amount: ")
         return
