@@ -2,11 +2,19 @@ from aiogram import Router
 from aiogram.filters import Command, CommandStart
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
 
 from bot.client import APIClient
 
 router = Router()
 api_client = APIClient()
+
+
+class AddExpenseStates(StatesGroup):
+    waiting_for_amount = State()
+    waiting_for_category_id = State()
+    waiting_for_description = State()
+
 
 @router.message(CommandStart())
 async def cmd_start(message: Message, state: FSMContext) -> None:
@@ -26,3 +34,9 @@ async def get_categories(message: Message, state: FSMContext) -> None:
         return
     categories = await api_client.get_categories(jwt_token)
     await message.answer(f'Your categories: {categories}')
+
+
+@router.message(Command('add_expense'))
+async def add_expense(message: Message, state: FSMContext) -> None:
+    await state.set_state(AddExpenseStates.waiting_for_amount)
+    await message.answer('Enter the amount: ')
