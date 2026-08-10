@@ -1,97 +1,17 @@
-"""Router module for handling financial expenses and Telegram bot commands."""
-
-from aiogram import Router, F
+from aiogram import Router
 from aiogram.filters import Command, CommandStart
+from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import Message, CallbackQuery
-from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from bot.client import APIClient
 
 router = Router()
 api_client = APIClient()
 
-
-class AddExpenseStates(StatesGroup):
-    waiting_for_amount = State()
-    waiting_for_category_id = State()
-    waiting_for_description = State()
-
-
 @router.message(CommandStart())
 async def cmd_start(message: Message, state: FSMContext) -> None:
-    """Handle /start command, authenticate user via Telegram ID, and store JWT token."""
     telegram_id = message.from_user.id
-    data = await api_client.login_telegram(telegram_id)
-    access_token = data["access_token"]
+    user_data = await api_client.login_telegram(telegram_id)
+    access_token = user_data.get('access_token')
     await state.update_data(jwt_token=access_token)
-    await message.answer(
-        f"Hi! Token received. Your token: {access_token[:10]}. The token was saved."
-    )
-
-
-@router.message(Command("categories"))
-async def cmd_get_categories(message: Message, state: FSMContext) -> None:
-    """Fetch and display available categories for authorized users."""
-    user_data = await state.get_data()
-    jwt_token = user_data.get("jwt_token")
-    if not jwt_token:
-        await message.answer("User is not authorized. Type /start and try again.")
-        return
-    categories = await api_client.get_categories(jwt_token)
-    await message.answer(f"Your categories list: {categories}")
-
-
-@router.message(Command("add_expense"))
-async def add_expense(message: Message, state: FSMContext) -> None:
-    await state.set_state(AddExpenseStates.waiting_for_amount)
-    await message.answer('Enter the amount: ')
-
-
-@router.message(AddExpenseStates.waiting_for_amount)
-async def process_amount(message: Message, state: FSMContext) -> None:
-    try:
-        amount = float(message.text)
-        if amount <= 0:
-            raise ValueError
-        await state.update_data(amount=amount)
-        await state.set_state(AddExpenseStates.waiting_for_category_id)
-        user_data = await state.get_data()
-        categories = await api_client.get_categories(user_data.get('jwt_token'))
-        builder = InlineKeyboardBuilder()
-
-        for cat in categories:
-            builder.button(text=cat["name"], callback_data=f"category_{cat['id']}")
-        builder.adjust(2)
-
-        await message.answer("Choose a category:", reply_markup=builder.as_markup())
-    except ValueError:
-        await message.answer("Enter the correct amount: ")
-        return
-
-
-@router.callback_query(AddExpenseStates.waiting_for_category_id)
-async def process_category_id(callback: CallbackQuery, state: FSMContext) -> None:
-    try:
-        await callback.answer()
-        category_id = int(callback.data.split("_")[1])
-        if category_id <= 0:
-            raise ValueError
-
-        await state.update_data(category_id=category_id)
-        await state.set_state(AddExpenseStates.waiting_for_description)
-        await callback.message.answer("Nice! Please enter the description: ")
-    except ValueError:
-        await callback.message.answer("Please choose a valid category from the buttons.")
-        return
-
-
-@router.message(AddExpenseStates.waiting_for_description)
-async def process_description(message: Message, state: FSMContext) -> None:
-    description = message.text
-    await state.update_data(description=description)
-    user_data = await state.get_data()
-    create_expense = await api_client.add_expense(access_token=user_data.get('jwt_token'), amount=user_data.get('amount'), category_id=user_data.get('category_id'), description=user_data.get('description'))
-    await state.clear()
-    await message.answer("The expense was added")
+    await message.answer(f'The token was successfully saved. Your token: {access_token[:10]}')
