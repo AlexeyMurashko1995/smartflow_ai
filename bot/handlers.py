@@ -74,3 +74,16 @@ async def process_category_id(callback: CallbackQuery, state: FSMContext) -> Non
     await state.update_data(category_id=category_id)
     await state.set_state(AddExpenseStates.waiting_for_description)
     await callback.message.answer('Please enter the description: ')
+
+
+@router.message(AddExpenseStates.waiting_for_description)
+async def process_description(message: Message, state: FSMContext) -> None:
+    if message.text.lower() == 'skip':
+        description = None
+    else:
+        description = message.text
+    await state.update_data(description=description)
+    data_user = await state.get_data()
+    await api_client.add_expense(access_token=data_user['jwt_token'], amount=data_user['amount'], category_id=data_user['category_id'], description=data_user['description'])
+    await message.answer('Expense successfully added!')
+    await state.clear()
