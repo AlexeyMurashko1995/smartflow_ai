@@ -1,4 +1,4 @@
-from aiogram import Router
+from aiogram import Router, F
 from aiogram.filters import Command, CommandStart
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
@@ -65,3 +65,8 @@ async def process_amount(message: Message, state: FSMContext) -> None:
     except ValueError:
         await message.answer('Please enter a valid amount: ')
         return
+
+
+@router.callback_query(AddExpenseStates.waiting_for_category_id, F.data.startswith('category_'))
+async def process_category_id(callback: CallbackQuery, state: FSMContext) -> None:
+    pass
