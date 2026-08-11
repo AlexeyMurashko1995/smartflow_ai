@@ -69,4 +69,8 @@ async def process_amount(message: Message, state: FSMContext) -> None:
 
 @router.callback_query(AddExpenseStates.waiting_for_category_id, F.data.startswith('category_'))
 async def process_category_id(callback: CallbackQuery, state: FSMContext) -> None:
-    pass
+    await callback.answer()
+    category_id = int(callback.data.split('_')[1])
+    await state.update_data(category_id=category_id)
+    await state.set_state(AddExpenseStates.waiting_for_description)
+    await callback.message.answer('Please enter the description: ')
