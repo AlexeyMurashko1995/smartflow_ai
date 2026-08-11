@@ -43,7 +43,7 @@ async def add_expense(message: Message, state: FSMContext) -> None:
     await message.answer('Enter the amount: ')
 
 
-@router.message(AddExpenseStates.waiting_for_amount)
+@router.message(AddExpenseStates.waiting_for_amount, F.text)
 async def process_amount(message: Message, state: FSMContext) -> None:
     try:
         amount = float(message.text)
@@ -76,7 +76,7 @@ async def process_category_id(callback: CallbackQuery, state: FSMContext) -> Non
     await callback.message.answer('Please enter the description: ')
 
 
-@router.message(AddExpenseStates.waiting_for_description)
+@router.message(AddExpenseStates.waiting_for_description, F.text)
 async def process_description(message: Message, state: FSMContext) -> None:
     if message.text.lower() == 'skip':
         description = None
@@ -84,6 +84,13 @@ async def process_description(message: Message, state: FSMContext) -> None:
         description = message.text
     await state.update_data(description=description)
     data_user = await state.get_data()
-    await api_client.add_expense(access_token=data_user['jwt_token'], amount=data_user['amount'], category_id=data_user['category_id'], description=data_user['description'])
-    await message.answer('Expense successfully added!')
-    await state.clear()
+    jwt_token = data_user.get('jwt_token')
+    try:
+        await api_client.add_expense(access_token=data_user['jwt_token'], amount=data_user['amount'], category_id=data_user['category_id'], description=data_user['description'])
+        await message.answer('Expense successfully added!')
+    except Exception:
+        await message.answer('Failed to add expense. Please try again later')
+    finally:
+        await state.clear()
+        if jwt_token:
+            await state.update_data(jwt_token=jwt_token)
