@@ -41,3 +41,9 @@ class APIClient:
                 json=payload,
             )
             return response.json()
+
+    async def get_expenses_summary(self, access_token: str):
+        async with httpx.AsyncClient() as client:
+            headers = {'Authorization': f'Bearer {access_token}'}
+            response = await client.get(url=f'{self.base_url}/expenses/summary', headers=headers)
+            return response.json()
