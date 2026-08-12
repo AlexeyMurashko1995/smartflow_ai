@@ -94,3 +94,21 @@ async def process_description(message: Message, state: FSMContext) -> None:
         await state.clear()
         if jwt_token:
             await state.update_data(jwt_token=jwt_token)
+
+
+@router.message(Command('summary'))
+async def get_summary(message: Message, state: FSMContext):
+    data = await state.get_data()
+    jwt_token = data.get('jwt_token')
+    if not jwt_token:
+        await message.answer('Please enter /start')
+        return
+    summary = await api_client.get_expenses_summary(access_token=jwt_token)
+    if not summary:
+        await message.answer('You do not have any expenses')
+        return
+    summary_list = []
+    for expense in summary:
+        summary_list.append(f'Category: {expense["category_name"]}; amount: {expense["total_amount"]}')
+    text = '\n'.join(summary_list)
+    await message.answer(text)
