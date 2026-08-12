@@ -58,5 +58,6 @@ class ExpenseResponse(BaseModel):
 
 class CategorySummaryResponse(BaseModel):
     category_id: Optional[int] = None
+    category_name: Optional[str] = None
     total_amount: Decimal
     model_config = ConfigDict(from_attributes=True)
