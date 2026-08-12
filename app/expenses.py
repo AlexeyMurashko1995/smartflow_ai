@@ -3,7 +3,7 @@ from sqlalchemy import select, func
 from app.database import AsyncSession, get_async_session
 from app.schemas import ExpenseCreate, ExpenseResponse, CategorySummaryResponse
 from app.security import get_current_user
-from app.models import Expense, User
+from app.models import Expense, User, Category
 
 router = APIRouter(prefix='/expenses', tags=['Expenses'])
 
@@ -19,7 +19,7 @@ async def create_expense(expense_data: ExpenseCreate, session: AsyncSession = De
 
 @router.get('/summary', response_model=list[CategorySummaryResponse])
 async def get_expenses_summary(session: AsyncSession = Depends(get_async_session), current_user: User = Depends(get_current_user)):
-    query = select(Expense.category_id, func.sum(Expense.amount).label('total_amount')).where(Expense.user_id == current_user.id).group_by(Expense.category_id)
+    query = select(Expense.category_id, Category.name.label('category_name'), func.sum(Expense.amount).label('total_amount')).join(Category).where(Expense.user_id == current_user.id).group_by(Expense.category_id, Category.name)
     result = await session.execute(query)
     summary_list = result.all()
     return summary_list
