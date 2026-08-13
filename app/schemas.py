@@ -61,3 +61,9 @@ class CategorySummaryResponse(BaseModel):
     category_name: Optional[str] = None
     total_amount: Decimal
     model_config = ConfigDict(from_attributes=True)
+
+
+class AIExpenseExtract(BaseModel):
+    amount: Decimal
+    category_name: str
+    description: Optional[str] = None
