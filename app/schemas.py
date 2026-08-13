@@ -67,3 +67,7 @@ class AIExpenseExtract(BaseModel):
     amount: Decimal
     category_name: str
     description: Optional[str] = None
+
+
+class TextExpenseCreate(BaseModel):
+    text: str
