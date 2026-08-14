@@ -21,3 +21,12 @@ async def extract_expense_from_text(text: str) -> AIExpenseExtract:
         response_format=AIExpenseExtract,
     )
     return response.choices[0].message.parsed
+
+
+async def transcribe_audio(audio_bytes: bytes) -> str:
+    client = AsyncOpenAI(api_key='test')
+    response = await client.audio.transcriptions.create(
+        model="whisper-1",
+        file=("voice.ogg", audio_bytes, "audio/ogg")
+    )
+    return response.text
