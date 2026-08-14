@@ -86,7 +86,12 @@ async def process_description(message: Message, state: FSMContext) -> None:
     data_user = await state.get_data()
     jwt_token = data_user.get('jwt_token')
     try:
-        await api_client.add_expense(access_token=data_user['jwt_token'], amount=data_user['amount'], category_id=data_user['category_id'], description=data_user['description'])
+        await api_client.add_expense(
+            access_token=data_user['jwt_token'],
+            amount=data_user['amount'],
+            category_id=data_user['category_id'],
+            description=data_user['description'],
+        )
         await message.answer('Expense successfully added!')
     except Exception:
         await message.answer('Failed to add expense. Please try again later')
@@ -97,7 +102,7 @@ async def process_description(message: Message, state: FSMContext) -> None:
 
 
 @router.message(Command('summary'))
-async def get_summary(message: Message, state: FSMContext):
+async def get_summary(message: Message, state: FSMContext) -> None:
     data = await state.get_data()
     jwt_token = data.get('jwt_token')
     if not jwt_token:
@@ -109,7 +114,9 @@ async def get_summary(message: Message, state: FSMContext):
         return
     summary_list = []
     for expense in summary:
-        summary_list.append(f'Category: {expense["category_name"]}; amount: {expense["total_amount"]}')
+        summary_list.append(
+            f'Category: {expense["category_name"]}; amount: {expense["total_amount"]}'
+        )
     text = '\n'.join(summary_list)
     await message.answer(text)
 
@@ -126,4 +133,3 @@ async def process_expense_via_ai(message: Message, state: FSMContext) -> None:
         await message.answer('Expense successfully added')
     except Exception:
         await message.answer('Failed to add expense. Please try again later')
-
