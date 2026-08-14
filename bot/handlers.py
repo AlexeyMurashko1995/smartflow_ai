@@ -1,5 +1,5 @@
 from aiogram import Router, F
-from aiogram.filters import Command, CommandStart
+from aiogram.filters import Command, CommandStart, StateFilter
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
@@ -112,3 +112,18 @@ async def get_summary(message: Message, state: FSMContext):
         summary_list.append(f'Category: {expense["category_name"]}; amount: {expense["total_amount"]}')
     text = '\n'.join(summary_list)
     await message.answer(text)
+
+
+@router.message(StateFilter(None), F.text)
+async def process_expense_via_ai(message: Message, state: FSMContext) -> None:
+    data = await state.get_data()
+    jwt_token = data.get('jwt_token')
+    if not jwt_token:
+        await message.answer('User not authorized. Please enter /start')
+        return
+    try:
+        await api_client.add_expense_via_ai(jwt_token, message.text)
+        await message.answer('Expense successfully added')
+    except Exception:
+        await message.answer('Failed to add expense. Please try again later')
+
