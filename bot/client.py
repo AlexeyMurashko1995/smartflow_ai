@@ -47,3 +47,10 @@ class APIClient:
             headers = {'Authorization': f'Bearer {access_token}'}
             response = await client.get(url=f'{self.base_url}/expenses/summary', headers=headers)
             return response.json()
+
+    async def add_expense_via_ai(self, access_token: str, text: str):
+        async with httpx.AsyncClient() as client:
+            headers = {'Authorization': f'Bearer {access_token}'}
+            payload = {'text': text}
+            response = await client.post(url=f'{self.base_url}/expenses/ai', headers=headers, json=payload)
+            return response.json()
