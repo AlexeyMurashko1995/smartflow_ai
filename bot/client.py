@@ -54,3 +54,12 @@ class APIClient:
             payload = {'text': text}
             response = await client.post(url=f'{self.base_url}/expenses/ai', headers=headers, json=payload)
             return response.json()
+
+    async def add_expense_via_ai_voice(self, access_token: str, audio_bytes: bytes):
+        async with httpx.AsyncClient() as client:
+            headers = {'Authorization': f'Bearer {access_token}'}
+            files = {
+                'file': ('voice.ogg', audio_bytes, 'audio/ogg')
+            }
+            response = await client.post(url=f'{self.base_url}/expenses/ai_voice', headers=headers, files=files)
+            return response.json()
