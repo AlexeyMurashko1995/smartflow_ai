@@ -2,7 +2,7 @@ from openai import AsyncOpenAI
 from app.schemas import AIExpenseExtract
 
 async def extract_expense_from_text(text: str) -> AIExpenseExtract:
-    client = AsyncOpenAI(api_key='test')
+    client = AsyncOpenAI()
     system_prompt = (
     "You are an intelligent financial assistant. Your task is to analyze user text "
     "and extract expense details into the structured format.\n\n"
@@ -24,7 +24,7 @@ async def extract_expense_from_text(text: str) -> AIExpenseExtract:
 
 
 async def transcribe_audio(audio_bytes: bytes) -> str:
-    client = AsyncOpenAI(api_key='test')
+    client = AsyncOpenAI()
     response = await client.audio.transcriptions.create(
         model="whisper-1",
         file=("voice.ogg", audio_bytes, "audio/ogg")
