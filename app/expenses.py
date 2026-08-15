@@ -27,7 +27,7 @@ async def get_expenses_summary(session: AsyncSession = Depends(get_async_session
 
 
 @router.post('/ai', response_model=ExpenseResponse, status_code=status.HTTP_201_CREATED)
-async def create_expense_via_ai(session: AsyncSession = Depends(get_async_session), expense_data: TextExpenseCreate, current_user: User = Depends(get_current_user)):
+async def create_expense_via_ai(expense_data: TextExpenseCreate, session: AsyncSession = Depends(get_async_session), current_user: User = Depends(get_current_user)):
     current_expense = await extract_expense_from_text(expense_data.text)
     query = select(Category).where(Category.name==current_expense.category_name, Category.user_id==current_user.id)
     result = await session.execute(query)
