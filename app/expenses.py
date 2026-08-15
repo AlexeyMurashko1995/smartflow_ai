@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, File, UploadFile
 from sqlalchemy import select, func
-from app.ai_service import extract_expense_from_text
+from app.ai_service import extract_expense_from_text, transcribe_audio
 from app.database import AsyncSession, get_async_session
 from app.schemas import ExpenseCreate, ExpenseResponse, CategorySummaryResponse, TextExpenseCreate, CategoryCreate
 from app.security import get_current_user
@@ -29,6 +29,27 @@ async def get_expenses_summary(session: AsyncSession = Depends(get_async_session
 @router.post('/ai', response_model=ExpenseResponse, status_code=status.HTTP_201_CREATED)
 async def create_expense_via_ai(session: AsyncSession = Depends(get_async_session), expense_data: TextExpenseCreate, current_user: User = Depends(get_current_user)):
     current_expense = await extract_expense_from_text(expense_data.text)
+    query = select(Category).where(Category.name==current_expense.category_name, Category.user_id==current_user.id)
+    result = await session.execute(query)
+    current_category = result.scalar_one_or_none()
+    if not current_category:
+        new_category = Category(name=current_expense.category_name, user_id=current_user.id)
+        session.add(new_category)
+        await session.commit()
+        await session.refresh(new_category)
+        current_category = new_category
+    new_expense = Expense(amount=current_expense.amount, description=current_expense.description, category_id=current_category.id, user_id=current_user.id)
+    session.add(new_expense)
+    await session.commit()
+    await session.refresh(new_expense)
+    return new_expense
+
+
+@router.post('/ai_voice', response_model=ExpenseResponse, status_code=status.HTTP_201_CREATED)
+async def create_expense_voice_message(session: AsyncSession = Depends(get_async_session), file: UploadFile = File(), current_user: User = Depends(get_current_user)):
+    text_bytes = await file.read()
+    text = await transcribe_audio(text_bytes)
+    current_expense = await extract_expense_from_text(text)
     query = select(Category).where(Category.name==current_expense.category_name, Category.user_id==current_user.id)
     result = await session.execute(query)
     current_category = result.scalar_one_or_none()
