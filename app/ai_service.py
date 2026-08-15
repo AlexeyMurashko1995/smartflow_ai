@@ -2,7 +2,7 @@ from openai import AsyncOpenAI
 from app.schemas import AIExpenseExtract
 
 async def extract_expense_from_text(text: str) -> AIExpenseExtract:
-    client = AsyncOpenAI()
+    client = AsyncOpenAI(base_url="https://api.groq.com/openai/v1")
     system_prompt = (
     "You are an intelligent financial assistant. Your task is to analyze user text "
     "and extract expense details into the structured format.\n\n"
@@ -13,7 +13,7 @@ async def extract_expense_from_text(text: str) -> AIExpenseExtract:
     "3. Be concise and accurate with category names."
 )
     response = await client.beta.chat.completions.parse(
-        model="gpt-4o-mini",
+        model="llama-3.3-70b-versatile",
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": text},
@@ -24,9 +24,9 @@ async def extract_expense_from_text(text: str) -> AIExpenseExtract:
 
 
 async def transcribe_audio(audio_bytes: bytes) -> str:
-    client = AsyncOpenAI()
+    client = AsyncOpenAI(base_url="https://api.groq.com/openai/v1")
     response = await client.audio.transcriptions.create(
-        model="whisper-1",
+        model="whisper-large-v3-turbo",
         file=("voice.ogg", audio_bytes, "audio/ogg")
     )
     return response.text
