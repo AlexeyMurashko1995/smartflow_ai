@@ -1,4 +1,4 @@
-from aiogram import Router, F
+from aiogram import Router, F, Bot
 from aiogram.filters import Command, CommandStart, StateFilter
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
@@ -130,6 +130,22 @@ async def process_expense_via_ai(message: Message, state: FSMContext) -> None:
         return
     try:
         await api_client.add_expense_via_ai(jwt_token, message.text)
+        await message.answer('Expense successfully added')
+    except Exception:
+        await message.answer('Failed to add expense. Please try again later')
+
+
+@router.message(F.voice)
+async def process_expense_via_ai_voice(message: Message, state: FSMContext, bot: Bot):
+    data = await state.get_data()
+    jwt_token = data.get('jwt_token')
+    if not jwt_token:
+        await message.answer('User not authorized. Please enter /start')
+        return
+    try:
+        voice_message = await bot.download(message.voice)
+        audio_bytes = voice_message.read()
+        await api_client.add_expense_via_ai_voice(jwt_token, audio_bytes)
         await message.answer('Expense successfully added')
     except Exception:
         await message.answer('Failed to add expense. Please try again later')
