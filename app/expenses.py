@@ -17,6 +17,8 @@ async def create_expense(expense_data: ExpenseCreate, session: AsyncSession = De
     session.add(new_expense)
     await session.commit()
     await session.refresh(new_expense)
+    cache_key = f"summary_expenses:{current_user.id}"
+    await redis_client.delete(cache_key)
     return new_expense
 
 
@@ -50,6 +52,8 @@ async def create_expense_via_ai(expense_data: TextExpenseCreate, session: AsyncS
     session.add(new_expense)
     await session.commit()
     await session.refresh(new_expense)
+    cache_key = f"summary_expenses:{current_user.id}"
+    await redis_client.delete(cache_key)
     return new_expense
 
 
@@ -71,4 +75,6 @@ async def create_expense_voice_message(session: AsyncSession = Depends(get_async
     session.add(new_expense)
     await session.commit()
     await session.refresh(new_expense)
+    cache_key = f"summary_expenses:{current_user.id}"
+    await redis_client.delete(cache_key)
     return new_expense
