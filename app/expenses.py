@@ -47,6 +47,7 @@ async def create_expense_via_ai(expense_data: TextExpenseCreate, session: AsyncS
         session.add(new_category)
         await session.commit()
         await session.refresh(new_category)
+        await redis_client.delete(f"categories:{current_user.id}")
         current_category = new_category
     new_expense = Expense(amount=current_expense.amount, description=current_expense.description, category_id=current_category.id, user_id=current_user.id)
     session.add(new_expense)
@@ -70,6 +71,7 @@ async def create_expense_voice_message(session: AsyncSession = Depends(get_async
         session.add(new_category)
         await session.commit()
         await session.refresh(new_category)
+        await redis_client.delete(f"categories:{current_user.id}")
         current_category = new_category
     new_expense = Expense(amount=current_expense.amount, description=current_expense.description, category_id=current_category.id, user_id=current_user.id)
     session.add(new_expense)
