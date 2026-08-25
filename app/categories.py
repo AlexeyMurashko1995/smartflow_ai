@@ -16,6 +16,8 @@ async def create_category(category_data: CategoryCreate, session: AsyncSession =
     session.add(new_category)
     await session.commit()
     await session.refresh(new_category)
+    cache_key = f"categories:{current_user.id}"
+    await redis_client.delete(cache_key)
     return new_category
 
 
