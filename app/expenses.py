@@ -5,6 +5,8 @@ from app.database import AsyncSession, get_async_session
 from app.schemas import ExpenseCreate, ExpenseResponse, CategorySummaryResponse, TextExpenseCreate, CategoryCreate
 from app.security import get_current_user
 from app.models import Expense, User, Category
+from app.redis_client import redis_client
+import json
 
 router = APIRouter(prefix='/expenses', tags=['Expenses'])
 
@@ -20,9 +22,15 @@ async def create_expense(expense_data: ExpenseCreate, session: AsyncSession = De
 
 @router.get('/summary', response_model=list[CategorySummaryResponse])
 async def get_expenses_summary(session: AsyncSession = Depends(get_async_session), current_user: User = Depends(get_current_user)):
+    cache_key = f"summary_expenses:{current_user.id}"
+    cached = await redis_client.get(cache_key)
+    if cached is not None:
+        return json.loads(cached)
     query = select(Expense.category_id, Category.name.label('category_name'), func.sum(Expense.amount).label('total_amount')).join(Category).where(Expense.user_id == current_user.id).group_by(Expense.category_id, Category.name)
     result = await session.execute(query)
     summary_list = result.all()
+    data_to_cache = [{"category_id": row.category_id, "category_name": row.category_name, "total_amount": float(row.total_amount)} for row in summary_list]
+    await redis_client.set(cache_key, json.dumps(data_to_cache), ex=300)
     return summary_list
 
 
