@@ -20,6 +20,7 @@ services:
     environment:
     - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/smartflow_db
     - REDIS_URL=redis://redis:6379/0
+    - SECRET_KEY=my_super_secret_key_123
     depends_on:
     - db
     - redis
