@@ -36,4 +36,4 @@ services:
       - API_BASE_URL=http://web:8000
     depends_on:
       - web
-    command: command
+    command: python -m bot.main
