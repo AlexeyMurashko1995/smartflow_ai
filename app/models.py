@@ -12,7 +12,7 @@ class User(Base):
     __tablename__ = 'users'
     id: Mapped[int] = mapped_column(primary_key=True)
     email: Mapped[Optional[str]] = mapped_column(unique=True, index=True)
-    telegram_id: Mapped[int] = mapped_column(BigInteger, unique=True, index=True)
+    telegram_id: Mapped[Optional[int]] = mapped_column(BigInteger, unique=True, index=True)
     hashed_password: Mapped[Optional[str]]
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     categories: Mapped[list['Category']] = relationship(back_populates='user')
