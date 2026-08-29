@@ -1,8 +1,12 @@
 from openai import AsyncOpenAI
+import os
+from dotenv import load_dotenv
 from app.schemas import AIExpenseExtract
 
+load_dotenv()
+
 async def extract_expense_from_text(text: str) -> AIExpenseExtract:
-    client = AsyncOpenAI(base_url="https://api.groq.com/openai/v1")
+    client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"), base_url="https://api.groq.com/openai/v1")
     system_prompt = (
     "You are an intelligent financial assistant. Your task is to analyze user text "
     "and extract expense details into the structured format.\n\n"
@@ -13,7 +17,7 @@ async def extract_expense_from_text(text: str) -> AIExpenseExtract:
     "3. Be concise and accurate with category names."
 )
     response = await client.beta.chat.completions.parse(
-        model="llama-3.3-70b-versatile",
+        model="openai/gpt-oss-20b",
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": text},
