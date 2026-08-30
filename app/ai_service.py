@@ -1,18 +1,33 @@
 import json
 import os
 from dotenv import load_dotenv
-from openai import AsyncOpenAI
+from groq import AsyncGroq
 from app.schemas import AIExpenseExtract
 
 load_dotenv()
 
-client = AsyncOpenAI(
-    api_key=os.getenv("OPENAI_API_KEY"),
-    base_url="https://api.groq.com/openai/v1"
+client = AsyncGroq(
+    api_key=os.getenv("OPENAI_API_KEY")
 )
 
 
+async def get_working_model() -> str:
+    try:
+        models = await client.models.list()
+        text_models = [
+            m.id for m in models.data
+            if "whisper" not in m.id and "vision" not in m.id
+        ]
+        if text_models:
+            return text_models[0]
+    except Exception:
+        pass
+    return "llama-3.3-70b-specdec"
+
+
 async def extract_expense_from_text(text: str) -> AIExpenseExtract:
+    model_name = await get_working_model()
+
     system_prompt = (
         "You are an intelligent financial assistant. Analyze user text and extract expense details.\n\n"
         "Rules:\n"
@@ -23,7 +38,7 @@ async def extract_expense_from_text(text: str) -> AIExpenseExtract:
     )
 
     response = await client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model=model_name,
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": text},
