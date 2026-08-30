@@ -144,7 +144,7 @@ async def process_expense_via_ai_voice(message: Message, state: FSMContext, bot:
         return
     try:
         voice_message = await bot.download(message.voice)
-        audio_bytes = voice_message.read()
+        audio_bytes = voice_message.getvalue()
         await api_client.add_expense_via_ai_voice(jwt_token, audio_bytes)
         await message.answer('Expense successfully added')
     except Exception:
