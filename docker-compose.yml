@@ -1,35 +1,48 @@
 services:
   redis:
     image: redis:7-alpine
+    restart: always
     ports:
-    - "6379:6379"
+      - "6379:6379"
 
   db:
     image: postgres:15-alpine
+    restart: always
     ports:
-    - "5432:5432"
+      - "5432:5432"
     environment:
-    - POSTGRES_USER=postgres
-    - POSTGRES_PASSWORD=postgres
-    - POSTGRES_DB=smartflow_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=smartflow_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d smartflow_db"]
+      interval: 2s
+      timeout: 5s
+      retries: 5
 
   web:
     build: .
+    restart: always
     env_file:
       - .env
     ports:
-    - "8000:8000"
+      - "8000:8000"
     environment:
-    - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/smartflow_db
-    - REDIS_URL=redis://redis:6379/0
-    - SECRET_KEY=my_super_secret_key_123
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/smartflow_db
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=my_super_secret_key_123
     depends_on:
-    - db
-    - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
     command: sh -c "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 8000"
 
   bot:
     build: .
+    restart: always
     env_file:
       - .env
     environment:
@@ -37,3 +50,6 @@ services:
     depends_on:
       - web
     command: python -m bot.main
+
+volumes:
+  postgres_data:
